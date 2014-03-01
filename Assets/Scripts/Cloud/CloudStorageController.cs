@@ -387,8 +387,6 @@ public class CloudStorageController : MonoBehaviour {
 			_userObjId = User.ObjectId;
 			_userName = User.Username;
 			InitUser();
-			StartCoroutine(GetFacebookProfilePicture(_fbUserID));
-      CleanupGameStatus();
 		}
 	}
 
@@ -499,7 +497,13 @@ public class CloudStorageController : MonoBehaviour {
 			// User.UpdateCloudAsync ();
 
       User.SaveAsync().ContinueWith(t => {
+        Debug.Log("InitUser User.SaveAsync completed");
         OnSaveUser(t);
+        GetAcceptChallengeCount();
+        GetCompleteChallengeCount();
+        //FacebookConnection.Instance.GetRequestIDs(OnRequestIdsComplete);
+        CleanupGameStatus();
+        Debug.Log("CleanupGameStatus completed");
       });
  
       // StartCoroutine (DGUtils.WaitTaskAndDoAction(User.SaveAsync(), OnSaveUser));
@@ -510,16 +514,14 @@ public class CloudStorageController : MonoBehaviour {
 			string avatarName = GetStringUserAttribute("AvatarName");
 			Debug.Log("Avatar name= "+ avatarName);
 			_hasAvatar = avatarName == ""? false : true;
-		}
 
-		GetAcceptChallengeCount();
-    //_acceptChallengesCount = 0;
-    // _isAcceptChallengeReady = true;
-		GetCompleteChallengeCount();
-    //_completeChallengesCount = 0;
-    //_isCompleteChallengeReady = true;
-    //_isFindChallengeReady = true;
-		//FacebookConnection.Instance.GetRequestIDs(OnRequestIdsComplete);
+      GetAcceptChallengeCount();
+      GetCompleteChallengeCount();
+      CleanupGameStatus();
+      Debug.Log("CleanupGameStatus completed 2");
+		}
+	  StartCoroutine(GetFacebookProfilePicture(_fbUserID));
+
 	}
 	/// <summary>
 	/// Raises the save user complete event.
@@ -1123,16 +1125,21 @@ public class CloudStorageController : MonoBehaviour {
 	/// </summary>
 	public void GetAcceptChallengeCount()
 	{
-    Debug.Log("GetAcceptChallengeCount");
+    Debug.Log("GetAcceptChallengeCount entering and about to call query");
 		var query = new ParseQuery<Game>()
 			.WhereEqualTo("challengeeFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_CHALLENGED)
 			.WhereGreaterThan("challengerScore", -1);
 
+    Debug.Log("GetAcceptChallengeCount called query");
+
     query.CountAsync().ContinueWith(t => {
+      Debug.Log("GetAcceptChallengeCount did CountAsync");
+
       OnAcceptChallengeCount(t);
     });
 
+    Debug.Log("GetAcceptChallengeCount exiting");
 		// StartCoroutine (DGUtils.WaitTaskAndDoAction (query.CountAsync(), OnAcceptChallengeCount));	 
 	}
 
@@ -1222,15 +1229,18 @@ public class CloudStorageController : MonoBehaviour {
 	/// </summary>
 	public void GetCompleteChallengeCount()
 	{
-		var challenger = new ParseQuery<Game>()
+		// var challenger = new ParseQuery<Game>()
+		var challenger = ParseObject.GetQuery("Game")
 			.WhereEqualTo("challengerFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 
-		var challengee = new ParseQuery<Game>()
+		// var challengee = new ParseQuery<Game>()
+		var challengee = ParseObject.GetQuery("Game")
 			.WhereEqualTo("challengeeFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 
-		ParseQuery<Game> query = challengee.Or(challenger);
+		var query = challengee.Or(challenger);
+
     query.CountAsync().ContinueWith(t => {
       OnCompleteChallengeCount(t);
     });
