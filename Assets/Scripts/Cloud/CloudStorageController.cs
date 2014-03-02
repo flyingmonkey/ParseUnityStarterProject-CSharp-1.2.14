@@ -282,7 +282,7 @@ public class CloudStorageController : MonoBehaviour {
       _fbUserID = "750005908";
       // _accessToken = "CAAGCZCIXDRqsBALZALKVoY8M8Y3PIHb3vtAoiZBOMdzruynCdtidaUezck4xW1T5MjjcnxUZCxrpaZBDzYDpLy3z1Vnb5ZACSK1qFWkWTmsXhfcthHASvO5LQomafQxIwJ8aAhcGZAelRHlH7fn31ijicX4BTLodMh2vEtAwnoClk9RwaYbvCwhJE3dx55Lyw24ny4QWfzZCXQZDZD"; // Production
 
-      _accessToken = "CAAUQpWTWwRQBAMlbjQH3BVZBKrpz3ViBoJYO7bDrBoQBb4qbry7ZAgVUWCdXBjAZBUGyYXmLzWk4BQVg0gXCHfCLdpo09mdt5MD5Iu9ZC5B3vuP5HqEqVRImAUhPi2rACL5o6zehZC22ZB5N6uDrrmCaetk4ZCZBsTymRLdMu3TAMJmgiarrKfMf5NNB6ypVZCZBAZD";
+      _accessToken = "CAAUQpWTWwRQBAHbPt9WvLZA4gQERIRtc5gGE2m4GqrdaX8SbjjlL4ijHDy9haFQgSAclO4WrgnVFkIGL1EjHq8BItnZBojXTYGIbCe5a4HK58oIALapDQSF23cuWtQ2wNryvCnZARZCyQJNK4BCsIlerUJoDYrcqrgKwYTAet1a4yLspc5lVOsuVkRUiSOIZD";
 			break;
 //#endif
 			default: // Test User Name: Dick, FBID: 100007351565888
@@ -297,7 +297,7 @@ public class CloudStorageController : MonoBehaviour {
 		#endif
 */
     _fbUserID = "750005908";
-    _accessToken = "CAAUQpWTWwRQBAERcgvb59SGAOZAXpxX9WgmxzqjnUuu63NyCpuMmS3b7340Oe0dlEoePh7m4tGLUjbfX9PzjRXpwGvviQZAoygTItxWPv8RY7dsZA8nM9BRr3Q0MjmmRroyvwkGMFsq5DgZB88AymkZApOd7oHzu3fys8eEdZCrUpmx5rKawoOTAG21ZBwwjgz0kpoXU0dViQZDZD";
+    _accessToken = "CAAUQpWTWwRQBAHbPt9WvLZA4gQERIRtc5gGE2m4GqrdaX8SbjjlL4ijHDy9haFQgSAclO4WrgnVFkIGL1EjHq8BItnZBojXTYGIbCe5a4HK58oIALapDQSF23cuWtQ2wNryvCnZARZCyQJNK4BCsIlerUJoDYrcqrgKwYTAet1a4yLspc5lVOsuVkRUiSOIZD";
 		Debug.Log("CloudStorage Start. userId=" + _fbUserID);
 		string url = string.Format("/me?fields=id,username,name,picture&access_token={0}", _accessToken);
 		FB.API(url, HttpMethod.GET, FBUserCallback);
@@ -1175,7 +1175,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereEqualTo("challengerFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 		
-		ParseQuery<Game>  query = challengee.Or(challenger)
+		var query = challengee.Or(challenger)
 			.OrderByDescending("updatedAt");
 
 		StartCoroutine (WaitingCompleteChallenge(query.FindAsync(), action));
@@ -1229,13 +1229,13 @@ public class CloudStorageController : MonoBehaviour {
 	/// </summary>
 	public void GetCompleteChallengeCount()
 	{
-		// var challenger = new ParseQuery<Game>()
-		var challenger = ParseObject.GetQuery("Game")
+		// var challenger = ParseObject.GetQuery("Game")
+		var challenger = new ParseQuery<Game>()
 			.WhereEqualTo("challengerFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 
-		// var challengee = new ParseQuery<Game>()
-		var challengee = ParseObject.GetQuery("Game")
+		// var challengee = ParseObject.GetQuery("Game")
+		var challengee = new ParseQuery<Game>()
 			.WhereEqualTo("challengeeFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 
@@ -1278,7 +1278,7 @@ public class CloudStorageController : MonoBehaviour {
       .WhereEqualTo("challengeeFBId", _fbUserID)
       .WhereEqualTo("status", CHALLENGE_CHALLENGEE_STARTED);
 
-    ParseQuery<Game> query = challengee.Or(challenger);
+    var query = challengee.Or(challenger);
     // StartCoroutine (DGUtils.WaitTaskAndDoAction (query.FindAsync(), OnCleanupGameStatus));
     query.FindAsync().ContinueWith(t => {
       OnCleanupGameStatus(t);
@@ -1345,7 +1345,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereEqualTo("challengeeFBId", _fbChallengeeId)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 		
-		ParseQuery<Game>  query = challengee.Or(challenger)
+		var query = challengee.Or(challenger)
 			.OrderByDescending("updatedAt");
 		
 		StartCoroutine (WaitingGeneralGames(query.FindAsync(), action));	    
@@ -1371,7 +1371,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereEqualTo("winnerFBId", challengerFBid)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 		
-		ParseQuery<Game>  query = challengerWins.Or(challengeeWins);
+		var query = challengerWins.Or(challengeeWins);
 
     query.CountAsync().ContinueWith(t => {
       action(t);
@@ -1397,7 +1397,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereEqualTo("winnerFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 
-		ParseQuery<Game>  query = challengeeGlobalWins.Or(challengerGlobalWins);
+		var query = challengeeGlobalWins.Or(challengerGlobalWins);
 	
     query.CountAsync().ContinueWith(t => {
       action(t);
@@ -1426,7 +1426,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereNotEqualTo("winnerFBId", challengerFBid)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 		
-		ParseQuery<Game>  query = challengerLose.Or(challengeeLose);
+		var query = challengerLose.Or(challengeeLose);
 	  query.CountAsync().ContinueWith(t => {
       action(t);
     });
@@ -1451,7 +1451,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereNotEqualTo("winnerFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 		
-		ParseQuery<Game>  query = challengeeGlobalLose.Or(challengerGlobalLose);
+		var query = challengeeGlobalLose.Or(challengerGlobalLose);
 	  query.CountAsync().ContinueWith(t => {
       action(t);
     });
@@ -1473,7 +1473,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereEqualTo("challengeeFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 		
-		ParseQuery<Game>  query = challengee.Or(challenger)
+		var query = challengee.Or(challenger)
 			.OrderByDescending("updatedAt")
 			.Limit(1);
 
@@ -1499,7 +1499,7 @@ public class CloudStorageController : MonoBehaviour {
 			.WhereEqualTo("challengeeFBId", challengerFBid)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 		
-		ParseQuery<Game>  query = challengee.Or(challenger)
+		var query = challengee.Or(challenger)
 			.OrderByDescending("updatedAt")
 				.Limit(1);
 	
