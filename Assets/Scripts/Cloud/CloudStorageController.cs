@@ -37,6 +37,7 @@ public class CloudStorageController : MonoBehaviour {
 	private bool _isLoggedIn = false;
 	private bool _isAcceptChallengeReady = false;
 	private bool _isCompleteChallengeReady = false;
+	private int _isCompleteChallengeQueryCount = 0;
 	private bool _isFindChallengeReady = false;
 	private bool _isWaitingRandomChallenge = false;
 	private bool _isWaitingAcceptChallenge = false;
@@ -1229,22 +1230,32 @@ public class CloudStorageController : MonoBehaviour {
 	/// </summary>
 	public void GetCompleteChallengeCount()
 	{
+    Debug.Log("GetCompleteChallengeCount, entered");
+		_completeChallengesCount = 0;
+	  _isCompleteChallengeQueryCount = 0;
+
 		// var challenger = ParseObject.GetQuery("Game")
 		var challenger = new ParseQuery<Game>()
 			.WhereEqualTo("challengerFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
+
+    challenger.CountAsync().ContinueWith(t => {
+      OnCompleteChallengeCount(t);
+    });
 
 		// var challengee = ParseObject.GetQuery("Game")
 		var challengee = new ParseQuery<Game>()
 			.WhereEqualTo("challengeeFBId", _fbUserID)
 			.WhereEqualTo("status", CHALLENGE_COMPLETED);
 
-		var query = challengee.Or(challenger);
-
-    query.CountAsync().ContinueWith(t => {
+    challengee.CountAsync().ContinueWith(t => {
       OnCompleteChallengeCount(t);
     });
+
+		// var query = challengee.Or(challenger);
+
 		// StartCoroutine (DGUtils.WaitTaskAndDoAction (query.CountAsync(), OnCompleteChallengeCount));	 
+    Debug.Log("GetCompleteChallengeCount, exited");
 	}
 	
 	/// <summary>
@@ -1259,8 +1270,11 @@ public class CloudStorageController : MonoBehaviour {
 			Task<int> result = (Task<int>)task;
 			count = result.Result;
 		}
-		_completeChallengesCount = count;
-		_isCompleteChallengeReady = true;
+	  _isCompleteChallengeQueryCount++;
+    if (_isCompleteChallengeQueryCount > 1) {
+		  _completeChallengesCount = count;
+		  _isCompleteChallengeReady = true;
+    }
 	}
 
   /// <summary>
@@ -1273,16 +1287,17 @@ public class CloudStorageController : MonoBehaviour {
     var challenger = new ParseQuery<Game>()
       .WhereEqualTo("challengerFBId", _fbUserID)
       .WhereEqualTo("status", CHALLENGE_CREATED);
+    StartCoroutine (DGUtils.WaitTaskAndDoAction (challenger.FindAsync(), OnCleanupGameStatus));
+    // query.FindAsync().ContinueWith(t => {
+    //  OnCleanupGameStatus(t);
+    // });
 
     var challengee = new ParseQuery<Game>()
       .WhereEqualTo("challengeeFBId", _fbUserID)
       .WhereEqualTo("status", CHALLENGE_CHALLENGEE_STARTED);
+    StartCoroutine (DGUtils.WaitTaskAndDoAction (challengee.FindAsync(), OnCleanupGameStatus));
 
-    var query = challengee.Or(challenger);
-    // StartCoroutine (DGUtils.WaitTaskAndDoAction (query.FindAsync(), OnCleanupGameStatus));
-    query.FindAsync().ContinueWith(t => {
-      OnCleanupGameStatus(t);
-    });
+    // var query = challengee.Or(challenger);
   }
 
   /// <summary>
